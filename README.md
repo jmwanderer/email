@@ -159,12 +159,13 @@ Further configuration:
 
 Configure specific email addresses to be delivered to specific users.
 
-Configure SMTP login credentials to access Amazon SES SMTP endpoint.
-
 - /etc/aliases
     - Entries to direct email addresses to local users
     - format   email-name: local-user
     - e.g.     info: jim
+ 
+Configure SMTP login credentials to access Amazon SES SMTP endpoint.
+
 - /etc/exim4/passwd.client:
     - configure access credentials for Exi4 to access SES SMTP
     - _SMTP endpoint_:_login_:_password_
