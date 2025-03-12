@@ -2,21 +2,96 @@
 
 ## Exim4 with Amazon SES
 
-The Exim4 mail transfer agent running on Debian Linux configured to
+This is a summary of configuring Exim4 to send and receive email via
+Amazon SES with the help of a Python script. The Exim4 mail transfer 
+agent is running on Debian 12 Linux and configured to
 work with Amazon SES as a smart host.
 
-### Setup
+### System Setup
 - Exim4 is configured for local email and smarthost
 - Amazon SES configured to handle mail for a domain: e.g. example.net
 - Send Email:
     - Local email delivered to local mailboxes
-    - Exim4 forwards all non-local email to the Amazon SES enpoint
+    - Exim4 forwards all non-local email to the Amazon SES endpoint
 - Receiving email:
-    - Amazon SES stores email received to domain in an S3 bucket
-    - AWS user configured for access to SES SMTP service and S3 bucket
-    - Run a Python script to retrieve email from the S3 bucket and deliver locally
+    - Amazon SES stores email received to the domain in an S3 bucket
+    - An AWS user is configured for access to SES SMTP service and S3 bucket
+    - The Python script retrieves email from the S3 bucket and delivers locally
+
+###  Email Download Script
+
+Script: *get_s3_email.py*
+
+Fetches email from S3 bucket and send to the local SMTP server listening
+on 127.0.0.1
+
+#### Script Process
+- Get a list of objects in the S3 bucket
+- For each object in the lop level
+    - Download object
+    - Parse object as an email message
+    - Attempt to send to local SMTP deliver
+    - Success: copy to /processed directory in S3 bucket
+    - Fail: copy to /error directory in S3 bucket
+    - Delete original object
+
+#### Script Setup
+
+Clone or download the project, example assumes the project directory is *email*.
+
+Steps:
+
+- Create a Python venv and activate
+- Install boto
+- Configure AWS credentials
+- Test S3 bucket access
+- Run Script
+- Setup cron entry
+
+##### Create venv and Install boto
+
+```
+cd email
+python -m venv venv
+source venv/bin/activate
+pip install boto
+```
+
+##### Configure AWS Credentials
+
+Configure aws_access_key_id and aws_secret_access_key either with:
+
+- ~/.aws/config, ~/.aws/credentials
+- env variables
+
+##### Test Bucket Access
+
+AWS S3 bucket:
+
+- __bucket-name__
+- aws s3 ls s3://__bucket-name__
+
+
+##### Run script
+
+```
+cd email
+source venv/bin/activate
+python get_s3_emai.py __bucket-name__
+```
+
+##### Cron entry:
+
+Fetch email every 15 minutes:
+
+```
+0,15,30,45 * * * * cd ~/email; . ./venv/bin/activate; python get_s3_mail.py __bucket-name__
+```
 
 ### SMTP Settings Amazon SES
+
+Amazon SES setup:
+
 - SMTP endpoint: e.g. email-smtp.us-west-2.amazonaws.com
 - SES Configuration > Email Recieving
     - Default rule with:
@@ -24,7 +99,11 @@ work with Amazon SES as a smart host.
         - Action: deliver to an amazon S3 bucket
 
 ### AWS User and Credentials
-- Reduced capability dedicated AWS user for email
+
+It is good practice to create a dedicated user with limited
+capability for use in accessing the Amazon SES SMTP endpoint and the
+S3 bucket. 
+
 - Policy of AmazonSESFullAccess for SMTP access credentials
 - Policy for access to S3 bucket. Amazon S3 > Buckets > _bucket name_
     - Add to bucket policy:
@@ -35,7 +114,7 @@ work with Amazon SES as a smart host.
             "Sid": "Email-Access",
             "Effect": "Allow",
             "Principal": {
-                "AWS": "user ARN"
+                "AWS": "__user ARN__"
             },
             "Action": [
                 "s3:ListBucket",
@@ -44,14 +123,15 @@ work with Amazon SES as a smart host.
                 "s3:PutObject"
             ],
             "Resource": [
-                "arn:aws:s3:::bucket-name/*",
-                "arn:aws:s3:::bucket-name"
+                "arn:aws:s3:::__bucket-name__/*",
+                "arn:aws:s3:::__bucket-name__"
             ]
         }
 
 ```
 
-#### Exim4 Configuration
+
+### Exim4 Configuration
 
 Run conmfiguration with: `sudo dpkg-reconfigure exim4-config`
 
@@ -64,7 +144,8 @@ Selections:
     - system-name
     - domain-name (e.g. example.net)
 - Hostname of outgoing smart host:
-      - SES SMTP endpoing. (e.g. email-smtp.us-west-2.amazonaws.com::587 (note the double colon)
+    - SES SMTP endpoint name, double colon, port 587
+    - e.g. email-smtp.us-west-2.amazonaws.com::587
 - Hide local mail name in going mail
     - Yes
     - Enable rewriting (ensure From: has what SES expects/requires)
@@ -85,56 +166,10 @@ Further configuration:
     - _SMTP endpoint_:_login_:_password_
     - e.g.  email-smtp.us-west-2.amazonaws.com:34343DDE3:DSDFDSF23432
 
-### Script: get_s3_email.py
-
-Fetch email from S3 bucket and deliver locally
-
-#### Process
-- Get a list of objects in the S3 bucket
-- For each object in the lop level
-    - Download
-    - Parse as an email message
-    - Attempt to send with local SMTP deliver
-    - Success: copy to /processed directory in S3 bucket
-    - Fail: copy to /error directory in S3 bucket
-    - Delete original object
-
-#### Setup
-
-Create a directory for the script. Copy script, create a Python venv, and install the boto library.
-
-```
-mkdir process_email
-cd process_email
-cp ~/email/get_s3_email.py .
-python -m venv .venv
-source .venv/bin/activate
-pip install boto
-```
-
-AWS S3 bucket:
-- bucket-name
-- aws s3 ls s3://bucket-name
-
-Run script:
-
-```
-python get_s3_emai.py bucket-name
-```
-
-Cront entry:
-
-```
-0,15,30,45 * * * * cd ~/process_email; . ./venv/bin/activate; python get_s3_mail.py bucket-name
-```
-
 ### Resources
 - https://wiki.debian.org/Exim#Configuration
 - https://aws.amazon.com/ses
 - https://aws.amazon.com/s3/
 
 
-
-
-```
 
