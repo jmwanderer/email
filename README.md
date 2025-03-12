@@ -68,7 +68,7 @@ Configure aws_access_key_id and aws_secret_access_key either with:
 
 AWS S3 bucket:
 
-- __bucket-name__
+- __bucket-name__  e.g. domain-email
 - aws s3 ls s3://__bucket-name__
 
 
@@ -77,7 +77,7 @@ AWS S3 bucket:
 ```
 cd email
 source venv/bin/activate
-python get_s3_emai.py __bucket-name__
+python get_s3_email.py __bucket-name__
 ```
 
 ##### Cron entry:
@@ -156,6 +156,10 @@ Selections:
 - Split configuration into small files: you choice, I select No
 
 Further configuration:
+
+Configure specific email addresses to be delivered to specific users.
+
+Configure SMTP login credentials to access Amazon SES SMTP endpoint.
 
 - /etc/aliases
     - Entries to direct email addresses to local users
