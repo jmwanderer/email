@@ -59,10 +59,9 @@ pip install boto
 
 ##### Configure AWS Credentials
 
-Configure aws_access_key_id and aws_secret_access_key either with:
+An easy way to configure aws_access_key_id and aws_secret_access_key 
+for access to the S3 bucket is to set up ~/.aws/credentials. 
 
-- ~/.aws/config, ~/.aws/credentials
-- env variables
 
 ##### Test Bucket Access
 
@@ -133,31 +132,30 @@ S3 bucket.
 
 ### Exim4 Configuration
 
-Run conmfiguration with: `sudo dpkg-reconfigure exim4-config`
+Run configuration with: `sudo dpkg-reconfigure exim4-config`
 
-Selections:
-
-- Smart host with local email
-- System mail name: default
+- Select: mail sent by smarthost
+- System mail name: the default is a safe choice
 - IP Address to listen: default (127.0.0.1, ::1)
 - Other destinations for which mail is accepted:
-    - system-name
-    - domain-name (e.g. example.net)
+    - leave the system name
+    - add the domain-name (e.g. example.net)
+- Machines to relay mail for: leave blank
 - Hostname of outgoing smart host:
-    - SES SMTP endpoint name, double colon, port 587
-    - e.g. email-smtp.us-west-2.amazonaws.com::587
+    - SES SMTP endpoint name, *double colon*, port 587
+    - e.g. email-smtp.us-west-2.amazonaws.com::587  *note the double colon*
 - Hide local mail name in going mail
-    - Yes
-    - Enable rewriting (ensure From: has what SES expects/requires)
+    - Yes, enable rewriting (ensure that From: has what SES expects/requires)
 - Visible domain name for local users:
-    - domain name (e.g. example.net)
+    - enter the domain name (e.g. example.net)
 - Keep DNS queries minimal: No
 - Deliver method for local email: your choise, I use mbox
 - Split configuration into small files: you choice, I select No
 
-Further configuration:
+Further system configuration:
 
 Configure specific email addresses to be delivered to specific users.
+For example, forward info@example.net to the local user jim
 
 - /etc/aliases
     - Entries to direct email addresses to local users
