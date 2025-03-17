@@ -99,12 +99,12 @@ Amazon SES setup:
 
 ### AWS User and Credentials
 
-It is good practice to create a dedicated user with limited
+It is good practice to create two separate dedicated users with limited
 capability for use in accessing the Amazon SES SMTP endpoint and the
 S3 bucket. 
 
-- Policy of AmazonSESFullAccess for SMTP access credentials
-- Policy for access to S3 bucket. Amazon S3 > Buckets > _bucket name_
+- User 1: Policy of AmazonSESFullAccess for SMTP access credentials
+- User 2: Policy for access to S3 bucket. Amazon S3 > Buckets > _bucket name_
     - Add to bucket policy:
 
 
