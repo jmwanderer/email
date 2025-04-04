@@ -84,7 +84,7 @@ python get_s3_email.py __bucket-name__
 Fetch email every 15 minutes:
 
 ```
-0,15,30,45 * * * * cd ~/email; . ./venv/bin/activate; python get_s3_mail.py __bucket-name__
+0,15,30,45 * * * * ~/email/venv/bin/python get_s3_mail.py __bucket-name__
 ```
 
 ### SMTP Settings Amazon SES
